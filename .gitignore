@@ -1,0 +1,13 @@
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+
+# Pester / test output
+TestResults.xml
+coverage.xml
+
+# Local config and logs
+*.log
+*.local.ps1
