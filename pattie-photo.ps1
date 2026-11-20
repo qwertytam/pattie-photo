@@ -1,37 +1,36 @@
 <#
 .SYNOPSIS
-    Windows recycle bin file reviewer.
+    Review the Recycle Bin without Explorer: filter, preview, then restore or permanently delete.
 
 .DESCRIPTION
-    TODO: describe what the script does.
+    Reads the Recycle Bin directly from disk (much faster than Explorer on slow drives),
+    lets you filter by file type, original folder, name, size and dates (deleted, created,
+    modified), copies a selection to a staging folder for previewing, and then permanently
+    deletes, restores, or keeps the selection. Staging copies are removed afterwards and every
+    delete/restore is logged to pattie-photo-log.csv in the staging folder.
+
+    For scripted use, import the module instead:
+        Import-Module .\PattiePhoto.psm1
+        Get-BinItem | Select-BinItem -Extension jpg -DeletedBefore 2024-01-01 | Remove-BinItem -WhatIf
+
+.PARAMETER StagingPath
+    Folder for preview copies and the action log. Ideally on a different disk.
+
+.PARAMETER AllUsers
+    Include every user's Recycle Bin (run PowerShell as Administrator).
+
+.PARAMETER BinPath
+    Only read these bin folders, e.g. 'E:\$Recycle.Bin\S-1-5-21-...'.
+
+.EXAMPLE
+    .\pattie-photo.ps1 -StagingPath D:\BinPreview
 #>
 [CmdletBinding()]
-param()
+param(
+    [Parameter(Mandatory)][string]$StagingPath,
+    [switch]$AllUsers,
+    [string[]]$BinPath
+)
 
-Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
-
-function Get-RecycleBinItem {
-    <#
-    .SYNOPSIS
-        Returns the items currently in the recycle bin.
-    #>
-    [CmdletBinding()]
-    param()
-
-    $shell = New-Object -ComObject Shell.Application
-    # 10 = ssfBITBUCKET (Recycle Bin)
-    $shell.Namespace(10).Items()
-}
-
-function Invoke-Main {
-    [CmdletBinding()]
-    param()
-
-    Get-RecycleBinItem
-}
-
-# Only run when executed, not when dot-sourced (e.g. by tests).
-if ($MyInvocation.InvocationName -ne '.') {
-    Invoke-Main
-}
+Import-Module (Join-Path $PSScriptRoot 'PattiePhoto.psm1') -Force
+Start-BinReview @PSBoundParameters
